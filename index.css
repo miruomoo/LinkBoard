@@ -1,0 +1,30 @@
+body{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.main{
+    align-items: center;
+}
+
+button{
+    height: 50px;
+    width: 100px;
+    color:white;
+    border: 0px;
+    border-radius: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: lightgreen;
+}
+button:hover{
+    background: rgb(227, 255, 227);
+}
+
+input{
+    border: solid;
+    border-color: grey;
+    border-radius: 5px;
+    color: rgb(0, 0, 0);
+    font-family: Arial, Helvetica, sans-serif;
+    height: 50px;
+    width: 25%;
+}
