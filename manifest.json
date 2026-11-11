@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "LinkBoard",
+    "version": "1.0.0",
+    "description": "Right-click any form field to paste your preset links.",
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "permissions": ["contextMenus", "storage", "scripting", "activeTab"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_title": "LinkBoard",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png"
+        },
+        "default_popup": "index.html"
+    }
+}

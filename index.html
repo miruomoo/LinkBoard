@@ -1,12 +1,42 @@
+<!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <meta name="color-scheme" content="light dark">
         <link rel="stylesheet" href="index.css">
     </head>
     <body>
-        <h1>LinkBoard</h1>
-        <input type="text" id="input-el"></input>
-        <button id="input-btn">ADD</button>
-        <ul id="linkboard"></ul>
+        <header class="app-bar">
+            <h1>LinkBoard</h1>
+        </header>
+
+        <div class="new-link-row">
+            <button type="button" id="new-link-btn" class="btn filled">Add a new link</button>
+        </div>
+
+        <form id="link-form" class="card" hidden>
+            <div class="field">
+                <input type="text" id="name-el" placeholder=" " required>
+                <label for="name-el">Name</label>
+            </div>
+            <div class="field">
+                <input type="url" id="url-el" placeholder=" " required>
+                <label for="url-el">Link</label>
+            </div>
+
+            <span class="section-label">Icon</span>
+            <div id="icon-picker" class="picker" role="radiogroup" aria-label="Icon"></div>
+
+            <span class="section-label">Color</span>
+            <div id="color-picker" class="picker" role="radiogroup" aria-label="Color"></div>
+
+            <div class="actions">
+                <button type="button" id="cancel-btn" class="btn text" hidden>Cancel</button>
+                <button type="submit" id="save-btn" class="btn filled">Add link</button>
+            </div>
+        </form>
+
+        <ul id="linkboard" class="list"></ul>
         <script src="index.js"></script>
     </body>
 </html>
