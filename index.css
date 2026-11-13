@@ -212,11 +212,16 @@ body{
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 4px 8px 8px;
+    padding: 8px;
     border-radius: 12px;
+    cursor: grab;
 }
 .list li:hover{
     background: var(--state);
+}
+.list li.dragging{
+    opacity: 0.45;
+    cursor: grabbing;
 }
 .avatar{
     flex: none;
@@ -227,6 +232,7 @@ body{
     align-items: center;
     justify-content: center;
     font-size: 18px;
+    line-height: 1;
     background: color-mix(in srgb, var(--c) 25%, transparent);
 }
 .text{

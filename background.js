@@ -41,14 +41,26 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const { links = [] } = await chrome.storage.sync.get("links")
     const link = links.find(l => l.id === info.menuItemId)
-    if (!link || !tab?.id) return
+    if (!link || !tab?.id || !isScriptablePage(tab.url)) return
 
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id, frameIds: [info.frameId ?? 0] },
-        func: insertText,
-        args: [link.url]
-    })
+    try {
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id, frameIds: [info.frameId ?? 0] },
+            func: insertText,
+            args: [link.url]
+        })
+    } catch (error) {
+        console.warn("LinkBoard could not insert into this page.", error)
+    }
 })
+
+function isScriptablePage(url) {
+    try {
+        return ["http:", "https:", "file:"].includes(new URL(url).protocol)
+    } catch {
+        return false
+    }
+}
 
 // Runs inside the page
 function insertText(text) {

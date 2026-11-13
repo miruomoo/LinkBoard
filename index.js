@@ -47,6 +47,11 @@ chrome.storage.sync.get("links").then(data => {
 
 form.addEventListener("submit", async e => {
     e.preventDefault()
+    if (!validateURL()) {
+        urlEl.reportValidity()
+        return
+    }
+
     const link = {
         id: editingId || crypto.randomUUID(),
         icon: selectedIcon,
@@ -65,6 +70,7 @@ form.addEventListener("submit", async e => {
     resetForm()
 })
 
+urlEl.addEventListener("input", validateURL)
 cancelBtn.addEventListener("click", resetForm)
 newLinkBtn.addEventListener("click", () => openForm())
 
@@ -118,6 +124,27 @@ function openForm() {
     nameEl.focus()
 }
 
+function validateURL() {
+    const value = urlEl.value.trim()
+    let message = ""
+
+    if (value) {
+        try {
+            const parsed = new URL(value)
+            const supportedProtocol = ["http:", "https:", "file:"].includes(parsed.protocol)
+            const hasWebHost = parsed.protocol === "file:" || Boolean(parsed.hostname)
+            if (!supportedProtocol || !hasWebHost) {
+                message = "Enter a valid http, https, or file URL."
+            }
+        } catch {
+            message = "Enter a valid http, https, or file URL."
+        }
+    }
+
+    urlEl.setCustomValidity(message)
+    return !message
+}
+
 function startEdit(link) {
     openForm()
     editingId = link.id
@@ -126,6 +153,7 @@ function startEdit(link) {
     syncPickers()
     nameEl.value = link.name
     urlEl.value = link.url
+    validateURL()
     saveBtn.textContent = "Save"
     nameEl.focus()
 }
@@ -135,6 +163,18 @@ function renderLinks() {
 
     for (const link of links) {
         const li = document.createElement("li")
+        li.draggable = true
+        li.dataset.id = link.id
+
+        li.addEventListener("dragstart", event => {
+            event.dataTransfer.effectAllowed = "move"
+            event.dataTransfer.setData("text/plain", link.id)
+            li.classList.add("dragging")
+        })
+
+        li.addEventListener("dragend", () => {
+            li.classList.remove("dragging")
+        })
 
         const icon = document.createElement("span")
         icon.className = "avatar"
@@ -171,3 +211,21 @@ function renderLinks() {
         linkboard.appendChild(li)
     }
 }
+
+linkboard.addEventListener("dragover", event => {
+    event.preventDefault()
+    const dragging = linkboard.querySelector(".dragging")
+    const target = event.target.closest("li")
+    if (!dragging || !target || target === dragging) return
+
+    const { top, height } = target.getBoundingClientRect()
+    const insertAfter = event.clientY >= top + height / 2
+    linkboard.insertBefore(dragging, insertAfter ? target.nextSibling : target)
+})
+
+linkboard.addEventListener("drop", async event => {
+    event.preventDefault()
+    const orderedIds = [...linkboard.children].map(item => item.dataset.id)
+    links = orderedIds.map(id => links.find(link => link.id === id))
+    await saveLinks()
+})
