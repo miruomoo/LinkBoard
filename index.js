@@ -24,6 +24,8 @@ const DELETE_SVG = '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 
 
 let links = []
 let editingId = null
+let draggedId = null
+let dropIndex = null
 let selectedIcon = ICONS[0]
 let selectedColor = COLORS[0]
 
@@ -169,14 +171,14 @@ function renderLinks() {
         li.addEventListener("dragstart", event => {
             event.dataTransfer.effectAllowed = "move"
             event.dataTransfer.setData("text/plain", link.id)
+            draggedId = link.id
+            dropIndex = null
             li.classList.add("dragging")
         })
 
         li.addEventListener("dragend", () => {
             li.classList.remove("dragging")
-            linkboard.querySelectorAll(".drop-before, .drop-after").forEach(item => {
-                item.classList.remove("drop-before", "drop-after")
-            })
+            endDrag()
         })
 
         const icon = document.createElement("span")
@@ -215,25 +217,48 @@ function renderLinks() {
     }
 }
 
-linkboard.addEventListener("dragover", event => {
-    event.preventDefault()
-    const dragging = linkboard.querySelector(".dragging")
-    const target = event.target.closest("li")
-
+function clearDropMarker() {
     linkboard.querySelectorAll(".drop-before, .drop-after").forEach(item => {
         item.classList.remove("drop-before", "drop-after")
     })
-    if (!dragging || !target || target === dragging) return
+}
 
-    const { top, height } = target.getBoundingClientRect()
-    const insertAfter = event.clientY >= top + height / 2
-    target.classList.add(insertAfter ? "drop-after" : "drop-before")
-    linkboard.insertBefore(dragging, insertAfter ? target.nextSibling : target)
+function endDrag() {
+    draggedId = null
+    dropIndex = null
+    clearDropMarker()
+}
+
+// Listens on the document so the top and bottom edges of the list are valid targets
+document.addEventListener("dragover", event => {
+    if (!draggedId) return
+    event.preventDefault()
+
+    const items = [...linkboard.children]
+    const next = items.findIndex(item => {
+        const { top, height } = item.getBoundingClientRect()
+        return event.clientY < top + height / 2
+    })
+    dropIndex = next === -1 ? items.length : next
+
+    clearDropMarker()
+    if (dropIndex < items.length) items[dropIndex].classList.add("drop-before")
+    else items[items.length - 1].classList.add("drop-after")
 })
 
-linkboard.addEventListener("drop", async event => {
+document.addEventListener("drop", async event => {
+    if (!draggedId) return
     event.preventDefault()
-    const orderedIds = [...linkboard.children].map(item => item.dataset.id)
-    links = orderedIds.map(id => links.find(link => link.id === id))
+
+    const from = links.findIndex(link => link.id === draggedId)
+    let to = dropIndex
+    endDrag()
+    if (from === -1 || to === null) return
+
+    if (from < to) to--
+    if (from === to) return
+
+    const [moved] = links.splice(from, 1)
+    links.splice(to, 0, moved)
     await saveLinks()
 })
