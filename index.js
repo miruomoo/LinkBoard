@@ -174,6 +174,9 @@ function renderLinks() {
 
         li.addEventListener("dragend", () => {
             li.classList.remove("dragging")
+            linkboard.querySelectorAll(".drop-before, .drop-after").forEach(item => {
+                item.classList.remove("drop-before", "drop-after")
+            })
         })
 
         const icon = document.createElement("span")
@@ -216,10 +219,15 @@ linkboard.addEventListener("dragover", event => {
     event.preventDefault()
     const dragging = linkboard.querySelector(".dragging")
     const target = event.target.closest("li")
+
+    linkboard.querySelectorAll(".drop-before, .drop-after").forEach(item => {
+        item.classList.remove("drop-before", "drop-after")
+    })
     if (!dragging || !target || target === dragging) return
 
     const { top, height } = target.getBoundingClientRect()
     const insertAfter = event.clientY >= top + height / 2
+    target.classList.add(insertAfter ? "drop-after" : "drop-before")
     linkboard.insertBefore(dragging, insertAfter ? target.nextSibling : target)
 })
 
