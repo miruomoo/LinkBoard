@@ -1,5 +1,15 @@
 const PARENT_ID = "linkboard-root"
 
+let menuBuild = Promise.resolve()
+
+// Serialized so overlapping triggers can't interleave removeAll/create and cause duplicate-id errors
+function rebuildMenus() {
+    menuBuild = menuBuild.then(buildMenus).catch(error => {
+        console.error("LinkBoard could not build context menus.", error)
+    })
+    return menuBuild
+}
+
 async function buildMenus() {
     const { links = [] } = await chrome.storage.sync.get("links")
     await chrome.contextMenus.removeAll()
@@ -32,10 +42,10 @@ async function buildMenus() {
     }
 }
 
-chrome.runtime.onInstalled.addListener(buildMenus)
-chrome.runtime.onStartup.addListener(buildMenus)
+chrome.runtime.onInstalled.addListener(rebuildMenus)
+chrome.runtime.onStartup.addListener(rebuildMenus)
 chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "sync" && changes.links) buildMenus()
+    if (area === "sync" && changes.links) rebuildMenus()
 })
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {

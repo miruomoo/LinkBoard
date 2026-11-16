@@ -17,3 +17,24 @@ LinkBoard stores links you reuse and lets you insert one into a text field witho
 4. Open the extension popup to edit or delete saved links.
 
 LinkBoard’s context menu is available on editable fields, such as text inputs and text areas. Links are stored using Chrome sync storage.
+
+## Privacy
+
+LinkBoard doesn't collect, transmit, or sell any data. Your saved links are stored with `chrome.storage.sync`, which Chrome syncs across your own signed-in browsers. LinkBoard only accesses a page when you choose a link from its context menu, and only to insert that link into the focused field.
+
+## Project structure
+
+```text
+manifest.json     Extension manifest (Manifest V3)
+background.js     Service worker: builds the context menu and inserts links
+popup/            Toolbar popup for adding, editing, reordering, and deleting links
+icons/            Extension icons (16, 48, 128 px)
+```
+
+## Package for the Chrome Web Store
+
+Zip the extension files without repository metadata:
+
+```powershell
+Compress-Archive -Path manifest.json, background.js, popup, icons -DestinationPath LinkBoard.zip -Force
+```

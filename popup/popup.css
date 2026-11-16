@@ -8,6 +8,8 @@
     --on-surface-variant: #444746;
     --outline: #c4c7c5;
     --state: rgba(31, 31, 31, 0.08);
+    --error-container: #f9dedc;
+    --on-error-container: #410e0b;
     color-scheme: light dark;
 }
 
@@ -22,6 +24,8 @@
         --on-surface-variant: #c4c7c5;
         --outline: #5e5e5e;
         --state: rgba(227, 227, 227, 0.08);
+        --error-container: #8c1d18;
+        --on-error-container: #f9dedc;
     }
 }
 
@@ -201,6 +205,15 @@ body{
 .icon-btn:focus-visible{
     outline: 2px solid var(--primary);
     outline-offset: 2px;
+}
+
+.error{
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--error-container);
+    color: var(--on-error-container);
+    font-size: 13px;
 }
 
 .list{

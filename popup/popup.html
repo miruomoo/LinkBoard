@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="color-scheme" content="light dark">
-        <link rel="stylesheet" href="index.css">
+        <title>LinkBoard</title>
+        <link rel="stylesheet" href="popup.css">
     </head>
     <body>
         <header class="app-bar">
@@ -16,7 +17,7 @@
 
         <form id="link-form" class="card" hidden>
             <div class="field">
-                <input type="text" id="name-el" placeholder=" " required>
+                <input type="text" id="name-el" placeholder=" " pattern=".*\S.*" title="Enter a name." required>
                 <label for="name-el">Name</label>
             </div>
             <div class="field">
@@ -31,12 +32,14 @@
             <div id="color-picker" class="picker" role="radiogroup" aria-label="Color"></div>
 
             <div class="actions">
-                <button type="button" id="cancel-btn" class="btn text" hidden>Cancel</button>
+                <button type="button" id="cancel-btn" class="btn text">Cancel</button>
                 <button type="submit" id="save-btn" class="btn filled">Add link</button>
             </div>
         </form>
 
+        <p id="error-el" class="error" role="alert" hidden></p>
+
         <ul id="linkboard" class="list"></ul>
-        <script src="index.js"></script>
+        <script src="popup.js"></script>
     </body>
 </html>

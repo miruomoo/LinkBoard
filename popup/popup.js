@@ -7,6 +7,7 @@ const newLinkBtn = document.getElementById("new-link-btn")
 const saveBtn = document.getElementById("save-btn")
 const cancelBtn = document.getElementById("cancel-btn")
 const linkboard = document.getElementById("linkboard")
+const errorEl = document.getElementById("error-el")
 
 const ICONS = [
     "🔗", "⭐", "💼", "🏠", "📧", "📅", "📁", "📝", "💬", "🛒",
@@ -62,23 +63,35 @@ form.addEventListener("submit", async e => {
         url: urlEl.value.trim()
     }
 
-    if (editingId) {
-        links = links.map(l => (l.id === editingId ? link : l))
-    } else {
-        links.push(link)
-    }
+    const next = editingId
+        ? links.map(l => (l.id === editingId ? link : l))
+        : [...links, link]
 
-    await saveLinks()
-    resetForm()
+    if (await saveLinks(next)) resetForm()
 })
 
 urlEl.addEventListener("input", validateURL)
 cancelBtn.addEventListener("click", resetForm)
 newLinkBtn.addEventListener("click", () => openForm())
 
-async function saveLinks() {
-    await chrome.storage.sync.set({ links })
+async function saveLinks(next) {
+    try {
+        await chrome.storage.sync.set({ links: next })
+    } catch (error) {
+        console.error("LinkBoard could not save links.", error)
+        showError("Couldn't save. Chrome sync storage may be full. Try removing some links.")
+        return false
+    }
+
+    links = next
+    showError("")
     renderLinks()
+    return true
+}
+
+function showError(message) {
+    errorEl.textContent = message
+    errorEl.hidden = !message
 }
 
 function buildPicker(container, values, decorate, onSelect) {
@@ -114,15 +127,14 @@ function resetForm() {
     selectedColor = COLORS[0]
     syncPickers()
     saveBtn.textContent = "Add link"
+    showError("")
     form.hidden = true
     newLinkBtn.hidden = false
-    cancelBtn.hidden = false
 }
 
 function openForm() {
     form.hidden = false
     newLinkBtn.hidden = true
-    cancelBtn.hidden = false
     nameEl.focus()
 }
 
@@ -197,19 +209,22 @@ function renderLinks() {
         text.append(name, url)
 
         const edit = document.createElement("button")
+        edit.type = "button"
         edit.className = "icon-btn"
         edit.title = "Edit"
+        edit.setAttribute("aria-label", `Edit ${link.name}`)
         edit.innerHTML = EDIT_SVG
         edit.addEventListener("click", () => startEdit(link))
 
         const del = document.createElement("button")
+        del.type = "button"
         del.className = "icon-btn"
         del.title = "Delete"
+        del.setAttribute("aria-label", `Delete ${link.name}`)
         del.innerHTML = DELETE_SVG
         del.addEventListener("click", async () => {
-            links = links.filter(l => l.id !== link.id)
-            if (editingId === link.id) resetForm()
-            await saveLinks()
+            const saved = await saveLinks(links.filter(l => l.id !== link.id))
+            if (saved && editingId === link.id) resetForm()
         })
 
         li.append(icon, text, edit, del)
@@ -258,7 +273,8 @@ document.addEventListener("drop", async event => {
     if (from < to) to--
     if (from === to) return
 
-    const [moved] = links.splice(from, 1)
-    links.splice(to, 0, moved)
-    await saveLinks()
+    const next = [...links]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    await saveLinks(next)
 })
